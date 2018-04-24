@@ -1,0 +1,21 @@
+{
+    "name": "tystudy/yii2-swoole-websocket",
+    "description": "专注于swoole的websocket服务器 不修改yii2",
+    "type": "yii2-extension",
+    "keywords": ["yii2","extension","swoole","websocket"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "tystudy",
+            "email": "tystudy@163.com"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "~2.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "tystudy\\swoole\\": ""
+        }
+    }
+}
