@@ -1,7 +1,7 @@
 yii2-swoole-websocket
 ---------------
 利用swoole搭建了websocket服务器  不修改yii2直接使用  可以根据demo进行修改满足自己的websocket使用场景
-测试使用 php7.2 swoole1.10.3 yii2-advance（目前只支持advance）
+测试使用 php7.2 swoole1.10.3 yii2-advanced（目前只支持advanced）
 
 安装
 ---------------
@@ -32,7 +32,7 @@ or add
             'rootDir' => str_replace('console/config', '', __DIR__ ),//yii2项目根路径
             'app' => 'backend',
             'host' => '0.0.0.0',                //默认监听所有机器  可以填写127.0.0.1只监听本机 详见swoole文档
-            'port' => 9998,
+            'port' => 9999,
             'web' => 'web',                     //默认为web rootDir app web目的是拼接yii2的根目录
             'debug' => true,                    //默认开启debug，上线应置为false
             'env' => 'dev',                     //默认为dev，上线应置为prod 
@@ -57,5 +57,10 @@ linux 进入项目目录
     * 启动 ./yii websocket/start
     * 关闭 ./yii websocket/stop
     * 重启 ./yii websocket/restart    
-    
+
+-------------
+4.说明
+  由于swoole的websocket server具有http server的功能，可以利用websocket server来实现对http请求的响应 
+   一般不建议这样处理，线上环境通常是apache或nginx比swoole的功能更加完善，建议用来单纯的做websocket服务器
+  实现php的长链接和一些推送任务，结合yii2-queue爽到飞起
    

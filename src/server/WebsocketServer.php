@@ -1,6 +1,4 @@
 <?php
-
-
 namespace tystudy\swoole\server;
 
 use tystudy\swoole\web\Session;
@@ -22,23 +20,30 @@ class WebsocketServer
         $this->webRoot = $swooleConfig['document_root'];
         if( !empty($this->config) ) $this->config = array_merge($this->config, $config);
         $this->swoole->set($swooleConfig);
-        $this->swoole->on('request', [$this, 'onRequest']);
+//        $this->swoole->on('request', [$this, 'onRequest']);
         $this->swoole->on('WorkerStart', [$this, 'onWorkerStart']);
-
+        //ws
         $this->swoole->on("open",[$this,'onOpen']); 
         $this->swoole->on("message",[$this,'onMessage']); 
+        $this->swoole->on("close",[$this,'onClose']);	
     }
 
     //监听ws连接事件
-    public function onOpen($ws,$request){
+    public function onOpen($swoole,$request){
         echo "request->fd:{$request->fd}\n";
     }
     //监听ws消息事件
-    public function onMessage($ws,$frame){
+    public function onMessage($swoole,$frame){
         echo "frame->fd:{$frame->fd}\n";
         echo "server-push-message:{$frame->data}\n";                        
-        $ws->push($frame->fd,"server-push:".date("Y-m-d H:i:s"));
+        $swoole->push($frame->fd,"server-push:".date("Y-m-d H:i:s"));
     }
+    //监听ws关闭事件
+    public function onClose($swoole,$fd){
+//            \app\common\lib\redis\Predis::getInstance()->sRem(config('redis.live_game_key'),$fd);
+        echo "clientid:{$fd}\n";					
+    }
+    
 
     public function run()
     {
