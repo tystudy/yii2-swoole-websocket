@@ -1,5 +1,5 @@
 yii2-swoole-websocket
-=====================
+---------------
 利用swoole搭建了websocket服务器  不修改yii2直接使用  可以根据demo进行修改满足自己的websocket使用场景
 测试使用 php7.2 swoole1.10.3 yii2-advance（目前只支持advance）
 安装
