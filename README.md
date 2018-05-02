@@ -67,10 +67,10 @@ linux 进入项目目录
 -------------
 4.project项目demo文件 实现2人聊天的websocket应用
 ```bash
-	使用说明：
-		* 1.yii2 控制台中启动server  linux 下使用命令 ./yii websocket/start  
-		* 2.将project文件夹下的chat_server_websocket.php chat_server_websocket2.php 放任意可访问目录，修改websocket server IP
-		* 3.聊天使用mysql存储 
+使用说明：
+* 1.yii2 控制台中启动server  linux 下使用命令 ./yii websocket/start  
+* 2.将project文件夹下的chat_server_websocket.php chat_server_websocket2.php 放任意可访问目录，修改websocket server IP
+* 3.聊天使用mysql存储 
 ```
 -------------
 5.项目扩展应用
