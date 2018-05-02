@@ -1,23 +1,12 @@
 <?php
-
-
 namespace tystudy\swoole\console;
 
 use yii;
-//use feehi\debug\panels\ProfilingPanel;
-//use feehi\debug\panels\TimelinePanel;
-//use feehi\debug\Module;
 
 use yii\base\ExitException;
 use yii\helpers\ArrayHelper;
-use tystudy\swoole\web\Request;
-use tystudy\swoole\web\Response;
-use tystudy\swoole\web\Session;
-use tystudy\swoole\web\Dispatcher;
-use tystudy\swoole\web\ErrorHandler;
-use tystudy\swoole\web\Logger;
 use tystudy\swoole\server\WebsocketServer;
-use tystudy\swoole\project\ProjectWebsocketServer;
+//use tystudy\swoole\project\ProjectWebsocketServer;
 use yii\helpers\FileHelper;
 use yii\web\Application;
 use yii\web\UploadedFile;
@@ -49,6 +38,7 @@ class SwooleController extends \yii\console\Controller
 
     public $gcSessionInterval = 60000;//启动session回收的间隔时间，单位为毫秒
 
+    public $project="";
 
     public function actionStart()
     {
@@ -56,118 +46,12 @@ class SwooleController extends \yii\console\Controller
             $this->stderr("server already  started");
             exit(1);
         }
-        //没有路径创建相关路径
-        $pidDir = dirname($this->swooleConfig['pid_file']);
-        if( !file_exists($pidDir) ) FileHelper::createDirectory($pidDir);
-
-        $logDir = dirname($this->swooleConfig['log_file']);
-        if( !file_exists($logDir) ) FileHelper::createDirectory($logDir);
-
-        $rootDir = $this->rootDir;//yii2项目根目录 /usr/local/apache/htdocs/advanced/
-        
-        $web = $rootDir . $this->app . DIRECTORY_SEPARATOR . $this->web;///usr/local/apache/htdocs/advanced/backend/web
-//
-//        defined('YII_DEBUG') or define('YII_DEBUG', $this->debug);
-//        defined('YII_ENV') or define('YII_ENV', $this->env);
-//
-        //引入框架
-        require($rootDir . '/vendor/autoload.php');
-        require_once($rootDir . '/vendor/yiisoft/yii2/Yii.php');
-        if( $this->type == 'basic' ){
-            $config = require($rootDir . '/config/web.php');
-        }else {
-            require($rootDir . '/common/config/bootstrap.php');
-            require($rootDir . $this->app . '/config/bootstrap.php');
-
-            $config = ArrayHelper::merge(
-                require($rootDir . '/common/config/main.php'),
-                require($rootDir . '/common/config/main-local.php'),
-                require($rootDir . $this->app . '/config/main.php'),
-                require($rootDir . $this->app . '/config/main-local.php')
-            );
+        $projectServer=$this->project['server'][0];
+        if($projectServer && class_exists($projectServer)){
+            $server = new $projectServer($this->host, $this->port, $this->mode, $this->socketType, $this->swooleConfig, ['gcSessionInterval'=>$this->gcSessionInterval]);
+        }else{
+            throw new yii\base\Exception('找不到'.$projectServer.'请检查路径是否正确');
         }
-
-        $this->swooleConfig = array_merge([
-            'document_root' => $web,
-            'enable_static_handler' => true,
-        ], $this->swooleConfig);
-        
-        $server = new ProjectWebsocketServer($this->host, $this->port, $this->mode, $this->socketType, $this->swooleConfig, ['gcSessionInterval'=>$this->gcSessionInterval]);
-//        $server = new WebsocketServer($this->host, $this->port, $this->mode, $this->socketType, $this->swooleConfig, ['gcSessionInterval'=>$this->gcSessionInterval]);
-//
-//        /**
-//         * @param \swoole_http_request $request
-//         * @param \swoole_http_response $response
-//         */
-//        $server->runApp = function ($request, $response) use ($config, $web) {
-//            $yiiBeginAt = microtime(true);
-//            $aliases = [
-//                '@web' => '',
-//                '@webroot' => $web,
-//            ];
-//            $config['aliases'] = isset($config['aliases']) ? array_merge($aliases, $config['aliases']) : $aliases;
-//
-//            $requestComponent = [
-//                'class' => Request::className(),
-//                'swooleRequest' => $request,
-//            ];
-//            $config['components']['request'] = isset($config['components']['request']) ? array_merge($config['components']['request'], $requestComponent) : $requestComponent;
-//
-//            $responseComponent = [
-//                'class' => Response::className(),
-//                'swooleResponse' => $response,
-//            ];
-//            $config['components']['response'] = isset($config['components']['response']) ? array_merge($config['components']['response'], $responseComponent) : $responseComponent;
-//
-//            $config['components']['session'] = isset($config['components']['session']) ? array_merge(['savePath'=>$web . '/../runtime/session'], $config['components']['session'],  ["class" => Session::className()]) :  ["class" => Session::className(), 'savePath'=>$web . '/../session'];
-//
-//            $config['components']['errorHandler'] = isset($config['components']['errorHandler']) ? array_merge($config['components']['errorHandler'], ["class" => ErrorHandler::className()]) : ["class" => ErrorHandler::className()];
-//
-//            if( isset($config['components']['log']) ){
-//                $config['components']['log'] = array_merge($config['components']['log'], ["class" => Dispatcher::className(), 'logger' => Logger::className()]);
-//            }
-//
-////            if( isset($config['modules']['debug']) ){
-////                $config['modules']['debug'] = array_merge($config['modules']['debug'], [
-////                    "class" => Module::className(),
-////                    'panels' => [
-////                        'profiling' => ['class' => ProfilingPanel::className()],
-////                        'timeline' => ['class' => TimelinePanel::className()],
-////                    ]
-////                ]);
-////            }
-//
-//            try {
-//                $application = new Application($config);
-//                yii::$app->getLog()->yiiBeginAt = $yiiBeginAt;
-//                yii::$app->setAliases($aliases);
-//                try {
-//                    $application->state = Application::STATE_BEFORE_REQUEST;
-//                    $application->trigger(Application::EVENT_BEFORE_REQUEST);
-//
-//                    $application->state = Application::STATE_HANDLING_REQUEST;
-//                    $yiiresponse = $application->handleRequest($application->getRequest());
-//
-//                    $application->state = Application::STATE_AFTER_REQUEST;
-//                    $application->trigger(Application::EVENT_AFTER_REQUEST);
-//
-//                    $application->state = Application::STATE_SENDING_RESPONSE;
-//
-//                    $yiiresponse->send();
-//
-//                    $application->state = Application::STATE_END;
-//                } catch (ExitException $e) {
-//                    $application->end($e->statusCode, isset($yiiresponse) ? $yiiresponse : null);
-//                }
-//                yii::$app->getDb()->close();
-//                UploadedFile::reset();
-//                yii::$app->getLog()->getLogger()->flush();
-//                yii::$app->getLog()->getLogger()->flush(true);
-//            }catch (\Exception $e){
-//                yii::$app->getErrorHandler()->handleException($e);
-//            }
-//        };
-
         $this->stdout("server is running, listening {$this->host}:{$this->port}" . PHP_EOL);
         $server->run();
     }
@@ -178,7 +62,7 @@ class SwooleController extends \yii\console\Controller
         $this->stdout("server is stopped, stop listening {$this->host}:{$this->port}" . PHP_EOL);
     }
 
-    public function actioReloadTask()
+    public function actionReloadTask()
     {
         $this->sendSignal(SIGUSR2);
     }
@@ -203,10 +87,10 @@ class SwooleController extends \yii\console\Controller
         $this->actionStart();
     }
 
-    public function actionReload()
-    {
-        $this->actionRestart();
-    }
+//    public function actionReload()
+//    {
+//        $this->actionRestart();
+//    }
 
     private function sendSignal($sig)
     {
