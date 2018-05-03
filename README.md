@@ -7,6 +7,7 @@ yii2-swoole-websocket
 ---------------
 1.使用composer
 composer的安装以及国内镜像设置请点击[此处](http://www.phpcomposer.com/)
+如果无法安装 请把yii2的composer.json 修改 "minimum-stability": "dev",
 
 ```bash
 $ composer require tystudy/yii2-swoole-websocket -vvv
